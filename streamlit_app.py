@@ -1,4 +1,5 @@
 import streamlit as st
+import requests  
 from snowflake.snowpark.functions import col
 
 # Page setup
@@ -50,3 +51,9 @@ if st.button("Submit Order"):
 
         st.success(f"Order placed for {name_on_order.strip()}!")
         st.write("Ingredients:", ingredients_string)
+
+
+# New section to display smoothiefroot nutrition information
+
+smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")  
+st.text(smoothiefroot_response)
