@@ -1,54 +1,57 @@
+# Import python packages
 import streamlit as st
 import requests  
 from snowflake.snowpark.functions import col
 
 # Page setup
-st.set_page_config(page_title="Melanie's Smoothies", page_icon="🥤")
+st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
+st.write("Choose the fruits you want in your custom Smoothie!")
 
-# Title and instructions
-st.title("🥤 Customize Your Smoothie!")
-st.write("Choose up to 5 fruits for your custom smoothie.")
+
+# User input
+name_on_order = st.text_input("Name on Smoothie:")
+st.write("The name on your Smoothie will be:", name_on_order)
 
 # Connect to Snowflake using the Streamlit connection in secrets
 cnx = st.connection("snowflake")
 session = cnx.session()
 
 # Load fruit options from Snowflake
-fruit_df = (
-    session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS")
-    .select(col("FRUIT_NAME"), col("SEARCH_ON"))                
-)                                 
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'), col('SEARCH_ON'))
+st.dataframe(data=my_dataframe, use_container_width=True)
+
+
+ingredients_list = st.multiselect(
+  'Choose up to 5 ingredients:'
+    , my_dataframe
+    , max_selections=5
+)
+
+if ingredients_list: 
+
+    ingredients_string = ''
+
+    for fruit_chosen in ingredients_list: 
+        ingredients_string += fruit_chosen + ' '
+
+    my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
+            values ('""" + ingredients_string + """','""" + name_on_order + """')"""
+
+    time_to_insert = st.button('Submit Order')
+
+    if time_to_insert:
+        session.sql(my_insert_stmt).collect()
+        st.success('Your Smoothie is ordered!', icon="✅")
+
+
 
 
 # Convert Snowpark DataFrame to a simple Python list for Streamlit widgets
-fruit_list = [row["FRUIT_NAME"] for row in fruit_df.collect()]
+#fruit_list = [row["FRUIT_NAME"] for row in fruit_df.collect()]
 
 # User input
-name_on_order = st.text_input("Name on Smoothie:")
-ingredients_list = st.multiselect(
-    "Choose up to 5 ingredients:",
-    fruit_list,
-    max_selections=5
-)
 
-# Submit order
-if st.button("Submit Order"):
-    if not name_on_order.strip():
-        st.warning("Please enter a name for the order.")
-    elif not ingredients_list:
-        st.warning("Please choose at least one ingredient.")
-    else:
-        ingredients_string = ", ".join(ingredients_list)
-
-        # Simple insert for the app
-        insert_sql = f"""
-            INSERT INTO SMOOTHIES.PUBLIC.ORDERS (INGREDIENTS, NAME_ON_ORDER)
-            VALUES ('{ingredients_string}', '{name_on_order.strip()}')
-        """
-        session.sql(insert_sql).collect()
-
-        st.success(f"Order placed for {name_on_order.strip()}!")
-        st.write("Ingredients:", ingredients_string)
+# *Submit order
 
 
 # New section to display smoothiefroot nutrition information
