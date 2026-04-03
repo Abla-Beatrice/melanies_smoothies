@@ -16,11 +16,16 @@ session = cnx.session()
 # Load fruit options from Snowflake
 fruit_df = (
     session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS")
-    .select(col("FRUIT_NAME"))
-)
+    .select(col("FRUIT_NAME"), col("SEARCH_ON"))                
+)                                 
+
 
 # Convert Snowpark DataFrame to a simple Python list for Streamlit widgets
 fruit_list = [row["FRUIT_NAME"] for row in fruit_df.collect()]
+
+
+st.stop()
+
 
 # User input
 name_on_order = st.text_input("Name on Smoothie:")
