@@ -75,3 +75,9 @@ if ingredients_list:
 
         # Success message to user
         st.success('Your Smoothie is ordered!', icon="✅")
+
+
+
+
+cnx = st.connection("snowflake")
+session = cnx.session()
