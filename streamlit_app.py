@@ -30,9 +30,6 @@ ingredients_list = st.multiselect(
     max_selections=5
 )
 
-# Optional preview table
-st.dataframe(fruit_df.to_pandas(), width="stretch")
-
 # Submit order
 if st.button("Submit Order"):
     if not name_on_order.strip():
@@ -56,4 +53,4 @@ if st.button("Submit Order"):
 # New section to display smoothiefroot nutrition information
 
 smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")  
-st.text(smoothiefroot_response)
+st.text(smoothiefroot_response.json())
